@@ -18,6 +18,15 @@ const chainId = ChainId.MAINNET
 // https://etherscan.io/token/0x6b175474e89094c44da98b954eedeac495271d0f
 const daiTokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
 const wethTokenAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+const lendingPoolAddress = "0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5"
+const daiEthPriceFeedAggregatorAddress = "0x773616E4d11A78F511299002da57A0a94577F1f4"
+
+const swapRouterContractName =
+    //"ISwapRouter", //V2
+    "ISwapRouter02" //V3
+const swapRouterAddress =
+    //"0xE592427A0AEce92De3Edee1F18E0157C05861564", //V2
+    "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45" //V3
 
 async function main() {
     await getWeth()
@@ -116,14 +125,12 @@ async function main() {
 async function getLendingPool(account) {
     const lendingPoolAddressesProvider = await ethers.getContractAt(
         "ILendingPoolAddressesProvider",
-        "0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5",
+        lendingPoolAddress,
         account
     )
 
-    //console.log("LendingPoolAddressesProvider ", lendingPoolAddressesProvider)
-    const lendingPoolAddress = await lendingPoolAddressesProvider.getLendingPool()
-    //console.log(`lendingPoolAddress ${lendingPoolAddress}`)
-    return await ethers.getContractAt("ILendingPool", lendingPoolAddress, account)
+    const lendingPool = await lendingPoolAddressesProvider.getLendingPool()
+    return await ethers.getContractAt("ILendingPool", lendingPool, account)
 }
 
 async function approveErc20(erc20Token, spenderAddress, amountToSpend) {
@@ -154,7 +161,7 @@ async function getDaiPrice() {
     // https://docs.chain.link/docs/ethereum-addresses/
     const daiEthPriceFeed = await ethers.getContractAt(
         "AggregatorV3Interface",
-        "0x773616E4d11A78F511299002da57A0a94577F1f4"
+        daiEthPriceFeedAggregatorAddress
     )
     const roundData = await daiEthPriceFeed.latestRoundData()
     //console.log("The DAI/ETH roundData", roundData)
@@ -212,10 +219,8 @@ async function swapWethToDai(
 
     const SwapDaiContract = await ethers.getContractFactory("SwapDAI")
     const swapRouterContract = await ethers.getContractAt(
-        //"ISwapRouter",
-        //"0xE592427A0AEce92De3Edee1F18E0157C05861564", //V2
-        "ISwapRouter02",
-        "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45", //V3
+        swapRouterContractName,
+        swapRouterAddress,
         account
     )
     console.log(`SwapRouter created at ${swapRouterContract.address}`)
