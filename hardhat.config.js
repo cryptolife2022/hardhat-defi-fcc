@@ -10,17 +10,17 @@ require("dotenv").config()
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
-const RPC_API_KEY = "-alAvcRVXWJTRtuz_5SCEI2VP_v_xWiO"
 const MAINNET_RPC_URL =
     process.env.MAINNET_RPC_URL ||
     process.env.ALCHEMY_MAINNET_RPC_URL ||
-    "https://eth-mainnet.alchemyapi.io/v2/" + RPC_API_KEY
+    "https://eth-mainnet.alchemyapi.io/v2/" + process.env.RPC_API_KEY
 const RINKEBY_RPC_URL =
-    process.env.RINKEBY_RPC_URL || "https://eth-rinkeby.alchemyapi.io/v2/" + RPC_API_KEY
+    process.env.RINKEBY_RPC_URL || "https://eth-rinkeby.alchemyapi.io/v2/" + process.env.RPC_API_KEY
 const KOVAN_RPC_URL =
-    process.env.KOVAN_RPC_URL || "https://eth-kovan.alchemyapi.io/v2/" + RPC_API_KEY
+    process.env.KOVAN_RPC_URL || "https://eth-kovan.alchemyapi.io/v2/" + process.env.RPC_API_KEY
 const POLYGON_MAINNET_RPC_URL =
-    process.env.POLYGON_MAINNET_RPC_URL || "https://polygon-mainnet.alchemyapi.io/v2/" + RPC_API_KEY
+    process.env.POLYGON_MAINNET_RPC_URL ||
+    "https://polygon-mainnet.alchemyapi.io/v2/" + process.env.RPC_API_KEY
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x"
 // optional
 const MNEMONIC = process.env.MNEMONIC || "your mnemonic"
