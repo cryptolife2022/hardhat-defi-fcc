@@ -1,20 +1,10 @@
 const { getNamedAccounts, ethers } = require("hardhat")
 const { getWeth, AMOUNT } = require("../scripts/getWeth")
-/*
-const {
-    ChainId,
-    Fetcher,
-    WETH,
-    Route,
-    Trade,
-    Token,
-    TokenAmount,
-    TradeType,
-} = require("@uniswap/sdk")
-const url = "http://127.0.0.1:8545"
-const customHttpProvider = new ethers.providers.JsonRpcProvider(url)
-const chainId = ChainId.MAINNET
-*/
+
+//
+// UniSwap Pool Address is located at https://info.uniswap.org/#/pools
+//
+const wEthDaiPoolAddress = "0xc2e9f25be6257c210d7adf0d4cd6e3e881ba25f8"
 // https://etherscan.io/token/0x6b175474e89094c44da98b954eedeac495271d0f
 const daiTokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
 const wethTokenAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
@@ -22,9 +12,10 @@ const lendingPoolAddress = "0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5"
 const daiEthPriceFeedAggregatorAddress = "0x773616E4d11A78F511299002da57A0a94577F1f4"
 
 const swapRouterContractName =
-    //"ISwapRouter", //V2
-    "ISwapRouter02" //V3
+    //"ISwapRouter", //V2 https://docs.uniswap.org/protocol/V2/reference/smart-contracts/router-02
+    "ISwapRouter02" //V3 https://docs.uniswap.org/protocol/reference/deployments
 const swapRouterAddress =
+    // "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
     //"0xE592427A0AEce92De3Edee1F18E0157C05861564", //V2
     "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45" //V3
 
@@ -200,21 +191,59 @@ async function swapWethToDai(
     iDai,
     account
 ) {
+    // Front end interaction https://docs.uniswap.org/sdk/guides/auto-router
+    // Front end Uni-Swap Widget (https://docs.uniswap.org/sdk/widgets/swap-widget)
+    // Program into _app.js to retrieve web provider, and
+    // Install @uniswap/v3-sdk @uniswap/sdk-core @uniswap/smart-order-router
+    //
     /*
-    const DAI = new Token(ChainId.MAINNET, daiTokenAddress, 18)
-    const pair = await Fetcher.fetchPairData(DAI, WETH[DAI.chainId])
-    const route = new Route([pair], WETH[DAI.chainId])
-    const trade = new Trade(
-        route,
-        new TokenAmount(WETH[DAI.chainId], amountWethAccruedToRepayWei),
-        TradeType.EXACT_INPUT
+    const {
+        ChainId,
+        Fetcher,
+        WETH,
+        Route,
+        Trade,
+        Token,
+        TokenAmount,
+        TradeType,
+        Percent,
+    } = require("@uniswap/sdk")
+    import { AlphaRouter } from "@uniswap/smart-order-router"
+    import { Token, CurrencyAmount } from "@uniswap/sdk-core"
+    
+    const url = "http://127.0.0.1:8545"
+
+    
+    const router = new AlphaRouter({
+        chainId: ChainId.MAINNET,
+        provider: _PROVIDER_FROM_APP.JS_,
+    })
+
+    const WETH = new Token(ChainId.MAINNET, iWeth.address, 18, "WETH", "Wrapped Ether")
+    const DAI = new Token(ChainId.MAINNET, iDai.address, 18, "DAI", "DAI")
+    const wethAmount = CurrencyAmount.fromRawAmount(
+        currency,
+        JSBI.BigInt(withdrawnWETHAmountWei.toString())
     )
 
-    console.log("Mid Price WETH --> DAI:", route.midPrice.toSignificant(6))
-    console.log("Mid Price DAI --> WETH:", route.midPrice.invert().toSignificant(6))
-    console.log("-".repeat(45))
-    console.log("Execution Price WETH --> DAI:", trade.executionPrice.toSignificant(6))
-    console.log("Mid Price after trade WETH --> DAI:", trade.nextMidPrice.toSignificant(6))
+    const route = await router.route(wethAmount, DAI, TradeType.EXACT_OUTPUT, {
+        recipient: account,
+        slippageTolerance: new Percent(3, 100),
+        deadline: Math.floor(Date.now() / 1000 + 1800),
+    })
+
+    console.log(`Quote Exact In: ${route.quote.toFixed(2)}`)
+    console.log(`Gas Adjusted Quote In: ${route.quoteGasAdjusted.toFixed(2)}`)
+    console.log(`Gas Used USD: ${route.estimatedGasUsedUSD.toFixed(6)}`)
+
+    const transaction = {
+        data: route.methodParameters.calldata,
+        to: swapRouterAddress,
+        value: BigNumber.from(route.methodParameters.value),
+        from: account,
+        gasPrice: BigNumber.from(route.gasPriceWei),
+    }
+    await web3Provider.sendTransaction(transaction)
     */
 
     const SwapDaiContract = await ethers.getContractFactory("SwapDAI")
